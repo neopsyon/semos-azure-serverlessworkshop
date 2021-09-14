@@ -1,2 +1,2 @@
-# semos-azure-serverlessworkshop
+# Semos Education Serverless Workshop!
 Azure Functions, Event Grid, Service Bus &amp; More!
