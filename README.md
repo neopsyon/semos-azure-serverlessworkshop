@@ -1,4 +1,8 @@
+# Serverless Workshop | Azure Functions, Event Grid, Service Bus &amp; More!
 
-# Semos Education | Microsoft - Serverless Workshop | Azure Functions, Event Grid, Service Bus &amp; More!
-<img src="/.img/semos-logo.png" alt="semos" width="200"/>
+# Sponsors
+## Semos Education
+<img src="/.img/semos-logo.png" alt="semos" width="200"/>  
+
+## Microsoft
 <img src="/.img/microsoft-logo.png" alt="microsoft" width="200"/>
