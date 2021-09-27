@@ -1,0 +1,52 @@
+name: $(date:yyyy.M.d)-$(Build.SourceBranchName)-$(date:HHmm)
+
+parameters:
+  - name: connectedServiceName
+    type: string
+    default: # To be created
+
+  - name: resourceGroupName
+    type: string
+    default: serverlessWorkshop 
+
+  - name: environment
+    type: string
+    default: prd001
+
+  - name: resourceName
+    type: string
+    default: keyVaultMonitor # To be filled
+
+variables:
+- name: vmImage
+  value: windows-latest
+
+- name: artifactName
+  value: drop
+
+- name: artifactArchive
+  value: 
+
+stages:
+- template: stages/build.yaml
+  parameters:
+    functions:
+      - keyVault-monitor
+      - keyVault-scheduler
+    vmImage: $(vmImage)
+    environment: ${{ parameters.environment }}
+    artifactArchive: $(artifactArchive)
+    artifactName: $(artifactName)
+
+- template: stages/deploy.yaml
+  parameters:
+    dependsOn: Build
+    vmImage: $(vmImage)
+    environment: ${{ parameters.environment }}
+    location: West Europe
+    connectedServiceName: ${{ parameters.connectedServiceName }}
+    resourceGroupName: ${{ parameters.resourceGroupName }}
+    resourceName: ${{ parameters.resourceName }}
+    artifactArchive: $(artifactArchive)
+    artifactName: $(artifactName)
+    opsGenieWebhook: ${{ parameters.opsGenieWebhook }}
