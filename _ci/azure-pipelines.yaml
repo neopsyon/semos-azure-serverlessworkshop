@@ -15,17 +15,11 @@ parameters:
 
   - name: resourceName
     type: string
-    default: keyVaultMonitor # To be filled
+    default: semosserverless # To be filled
 
 variables:
 - name: vmImage
   value: windows-latest
-
-- name: artifactName
-  value: drop
-
-- name: artifactArchive
-  value: 
 
 stages:
 - template: stages/build.yaml
@@ -47,6 +41,4 @@ stages:
     connectedServiceName: ${{ parameters.connectedServiceName }}
     resourceGroupName: ${{ parameters.resourceGroupName }}
     resourceName: ${{ parameters.resourceName }}
-    artifactArchive: $(artifactArchive)
-    artifactName: $(artifactName)
     opsGenieWebhook: ${{ parameters.opsGenieWebhook }}
