@@ -1,10 +1,12 @@
 # Serverless Workshop - Azure Functions, Event Grid, Service Bus &amp; More  
 
-<img src=".img/workshop.png" alt="drawing" width="200"/>
+![Workshop.png](.img/workshop.png)  
 
 ## Disclaimer  
 
-Primary language of the repository content is English, due to ease of distribution and understanding purposes.  
+*Primary language of the repository content is English, due to ease of distribution and understanding purposes.*  
+*Content of this repository is used for Educational purposes ONLY, and it does not contain any confidential or pirated information.*  
+
 ## Preface  
 
 Hi there! Thank's for attending the workshop event, or just going through this repository - you're at a good place!  
@@ -23,7 +25,8 @@ People who attend this workshop can expect as a takeway
 5. *Live coding session, Azure Function code will be developed during the session.*
 6. *Live troubleshooting session, since the session format will be freestyle trial and error.*
 
-## Repository content
+## Repository content  
+
 Content of this repository is based on existing OpenSource [Azure Key Vault Monitoring Framework](https://github.com/schubergphilis/keyVault-monitoring-framework), project is used as a shortcut for workshop purposes and inspirational idea, framework is built by the author of the workshop.  
 *Content includes*  
 
@@ -36,7 +39,7 @@ Content of this repository is based on existing OpenSource [Azure Key Vault Moni
 
 ## Components and architecture  
 
-<img src=".img/architecture.png" alt="drawing" width="200"/>
+![Architecture.png](.img/architecture.png)
 
 Based on architectural diagram we can conclude  
 
@@ -57,4 +60,8 @@ Based on architectural diagram we can conclude
    4. Under credentials, generate new credentials for this application, they could be secret based, this credentials will be used as a service connection for deployment purposes from Azure DevOps towards Azure(ARM).
    5. In the [Azure Portal](https://portal.azure.com), head to Subscriptions, under IAM blade assign the Contributor rights to previously created Application / SPN.
    6. Head to [Azure DevOps Portal](https://dev.azure.com), create a project, under project settings, navigate to service connections, create new connection based on Azure Resource Manager, provide all needed information.
-4. In the Azure DevOps, head to Repositories, click on Import Repository and provide [URL to Serverless Workshop repository]()
+4. In the Azure DevOps, head to Repositories, click on Import Repository and provide [URL to Serverless Workshop repository](https://github.com/neopsyon/semos-azure-serverlessworkshop.git).
+5. In the Azure DevOps, head to Pipelines and create a new pipeline, choose to create a pipeline from the existing repository, and pick the azure-pipelines.yaml file from _ci repository.
+6. Woala, you have a working pipeline that will deploy infrastructure and code for you, please make sure to provide correct parameters when running the pipeline - parameter values have to mirror your environment
+   1. Service connection name that you previously created.
+   2. Name of the resource group that you want to target, does not need to exist beforehand.
