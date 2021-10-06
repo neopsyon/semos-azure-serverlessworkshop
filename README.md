@@ -6,6 +6,7 @@
 
 *Primary language of the repository content is English, due to ease of distribution and understanding purposes.*  
 *Content of this repository is used for Educational purposes ONLY, and it does not contain any confidential or pirated information.*  
+*Pipeline in this repository might not work in your environment immediately due to some dependencies, you can find out by trial and error.*  
 
 ## Preface  
 
@@ -51,17 +52,18 @@ Based on architectural diagram we can conclude
 
 ## Steps & Manual
 
-1. You will need an Azure Account + Subscription, and Azure DevOps account and a project.  
-2. If you do not have a subscription, create it.  
-3. Head to Azure AD, under application you will provision a new application.  
+1. You will need an Azure Account + Subscription, and Azure DevOps account and a project.  \
+2. You will have to create a SendGrid account within Azure in order to completely comply with the alert raiser function, otherwise you can change it to do whatever else you like.
+3. If you do not have a subscription, create it.  
+4. Head to Azure AD, under application you will provision a new application.  
    1. This entity will serve as deployment entity.
    2. It will have Contributor rights over the subscription created in previous step.
    3. Give Aplication a sensible name, such as *serverlessworkshop-prd001-spn*, where spn stands for service principal.
    4. Under credentials, generate new credentials for this application, they could be secret based, this credentials will be used as a service connection for deployment purposes from Azure DevOps towards Azure(ARM).
    5. In the [Azure Portal](https://portal.azure.com), head to Subscriptions, under IAM blade assign the Contributor rights to previously created Application / SPN.
    6. Head to [Azure DevOps Portal](https://dev.azure.com), create a project, under project settings, navigate to service connections, create new connection based on Azure Resource Manager, provide all needed information.
-4. In the Azure DevOps, head to Repositories, click on Import Repository and provide [URL to Serverless Workshop repository](https://github.com/neopsyon/semos-azure-serverlessworkshop.git).
-5. In the Azure DevOps, head to Pipelines and create a new pipeline, choose to create a pipeline from the existing repository, and pick the azure-pipelines.yaml file from _ci repository.
-6. Woala, you have a working pipeline that will deploy infrastructure and code for you, please make sure to provide correct parameters when running the pipeline - parameter values have to mirror your environment
+5. In the Azure DevOps, head to Repositories, click on Import Repository and provide [URL to Serverless Workshop repository](https://github.com/neopsyon/semos-azure-serverlessworkshop.git).
+6. In the Azure DevOps, head to Pipelines and create a new pipeline, choose to create a pipeline from the existing repository, and pick the azure-pipelines.yaml file from _ci repository.
+7. Woala, you have a working pipeline that will deploy infrastructure and code for you, please make sure to provide correct parameters when running the pipeline - parameter values have to mirror your environment
    1. Service connection name that you previously created.
    2. Name of the resource group that you want to target, does not need to exist beforehand.
