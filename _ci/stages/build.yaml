@@ -14,14 +14,6 @@ stages:
       - job: Build
         pool:
           vmImage: ${{ parameters.vmImage }}
-        variables: 
-          - template: variables/vars.yaml
-
-          - name: artifactName
-            value: drop
-
-          - name: artifactArchive
-            value: build$(Build.BuildId).zip
         steps:
         - powershell: |
             if (-not (Get-Module -Name PSScriptAnalyzer -ListAvailable)) {

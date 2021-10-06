@@ -1,0 +1,67 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "serviceBusName": {
+            "type": "string"
+        },
+        "applicationShortName": {
+            "type": "string",
+            "defaultValue": "sbs"
+        },
+        "sku": {
+            "type": "string",
+            "defaultValue": "Basic",
+            "allowedValues": [
+                "Standard",
+                "Basic",
+                "Premium"
+            ],
+            "metadata": {
+                "description": "Service SKU"
+            }
+        },
+        "iszoneredundant": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Zone redundant"
+            }
+        }
+    },
+    "variables": {
+        "zoneredundancy" : "[if(and(equals(parameters('sku'), 'Premium'), parameters('iszoneredundant')), 'true','false')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2018-01-01-preview",
+            "name": "[parameters('serviceBusName')]",
+            "type": "Microsoft.ServiceBus/namespaces",
+            "location": "[resourceGroup().location]",
+            "sku": {
+                "name": "[parameters('sku')]"
+            },
+            "properties": {
+                "zoneRedundant":"[variables('zoneredundancy')]"
+            },
+            "resources": [
+                {
+                    "type": "AuthorizationRules",
+                    "name": "[parameters('applicationShortName')]",
+                    "apiVersion": "2017-04-01",
+                    "location": "[resourceGroup().location]",
+                    "properties": {
+                        "rights": [
+                            "Manage",
+                            "Listen",
+                            "Send"
+                        ]
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.ServiceBus/namespaces/', parameters('serviceBusName'))]"
+                    ]
+                }
+            ]
+        }
+    ]
+}

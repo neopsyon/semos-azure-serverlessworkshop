@@ -1,0 +1,48 @@
+parameters:
+- name: environment
+  type: string
+
+- name: resourceGroupName
+  type: string
+
+- name: connectedServiceName
+  type: string
+
+- name: location
+  type: string
+
+steps:
+  - task: AzureResourceGroupDeployment@2
+    displayName: 'Deploy Service Bus'
+    inputs:
+      azureSubscription: ${{ parameters.connectedServiceName }}
+      resourceGroupName: ${{ parameters.resourceGroupName }}
+      location: ${{ parameters.location }}
+      csmFile: $(templatesPath)/serviceBus.json
+      csmParametersFile: $(parametersPath)/${{ parameters.environment }}/serviceBus.params.json
+      overrideParameters: >
+        -serviceBusName $(serviceBusName)
+
+  - task: AzureResourceGroupDeployment@2
+    displayName: Deploy Service Bus Queue
+    inputs:
+      azureSubscription: ${{ parameters.connectedServiceName }}
+      resourceGroupName: ${{ parameters.resourceGroupName }}
+      location: ${{ parameters.location }}
+      csmFile: $(templatesPath)/serviceBusQueues.json
+      csmParametersFile: $(parametersPath)/${{ parameters.environment }}/serviceBusQueues.params.json
+      overrideParameters: >
+        -serviceBusName $(serviceBusName)
+
+  - task: AzurePowerShell@4
+    displayName: Store Service Bus connection string in the KeyVault
+    inputs:
+      azureSubscription: ${{ parameters.connectedServiceName }}
+      scriptType: inlineScript
+      azurePowerShellVersion: latestVersion
+      inline: |
+        . $(scriptsPath)/New-AzKeyVaultSecretSet.ps1
+        $serviceBusConnectionString = (Get-AzServiceBusKey -Namespace $(serviceBusName) -ResourceGroupName "${{ parameters.resourceGroupName }}" -Name 'RootManageSharedAccessKey').PrimaryConnectionString
+        $secrets = @{ "$(serviceBusName)-connectionString" = $serviceBusConnectionString }
+        $keyVaultName = "$(keyVaultName)"
+        New-AzKeyVaultSecretSet -KeyVault $keyVaultName -SecretSet $secrets

@@ -1,0 +1,39 @@
+parameters:
+
+- name: connectedServiceName
+  type: string
+
+- name: storageAccountName
+  type: string
+
+- name: resourceGroupName
+  type: string
+
+- name: outVariable
+  type: string
+
+steps:
+  - task: AzurePowerShell@4
+    displayName: Get storageAccount connection string
+    inputs:
+      azureSubscription: ${{ parameters.connectedServiceName }}
+      scriptType: inlineScript
+      inline: |
+        $storageAccountName = "${{ parameters.storageAccountName }}"
+        $charSize = ($storageAccountName | Measure-Object -Character).Characters
+        if (($charSize -gt 24) -or ($storageAccountName -contains '-')) {
+          $storageAccountName = $storageAccountName.replace('-','')
+        }
+        try {
+          $errorActionPreference = 'Stop'
+          $storageKey = (Get-AzStorageAccountKey -StorageAccountName $storageAccountName -ResourceGroupName "${{ parameters.resourceGroupName }}" )[0].value
+          $connectionString = 'DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix=core.windows.net' -f $storageAccountName, $storageKey
+          $outVar = "${{ parameters.outVariable }}"
+          Write-Host "##vso[task.setvariable variable=$outVar;issecret=true]$connectionString"
+          Write-Host ('Successfully fetched the connection string from storage account {0}' -f $storageAccountName)
+        }
+        catch {
+          throw $_
+        }
+      errorActionPreference: 'stop'
+      azurePowerShellVersion: latestVersion

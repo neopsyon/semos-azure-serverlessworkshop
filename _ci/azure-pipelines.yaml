@@ -3,7 +3,7 @@ name: $(date:yyyy.M.d)-$(Build.SourceBranchName)-$(date:HHmm)
 parameters:
   - name: connectedServiceName
     type: string
-    default: # To be created
+    default: nemanjajovic-azuredevops
 
   - name: resourceGroupName
     type: string
@@ -15,9 +15,10 @@ parameters:
 
   - name: resourceName
     type: string
-    default: semosserverless # To be filled
+    default: ssrv
 
 variables:
+- template: variables/vars.yaml
 - name: vmImage
   value: windows-latest
 
@@ -26,11 +27,9 @@ stages:
   parameters:
     functions:
       - keyVault-monitor
-      - keyVault-scheduler
+      - alert-raiser
     vmImage: $(vmImage)
     environment: ${{ parameters.environment }}
-    artifactArchive: $(artifactArchive)
-    artifactName: $(artifactName)
 
 - template: stages/deploy.yaml
   parameters:
@@ -41,4 +40,3 @@ stages:
     connectedServiceName: ${{ parameters.connectedServiceName }}
     resourceGroupName: ${{ parameters.resourceGroupName }}
     resourceName: ${{ parameters.resourceName }}
-    opsGenieWebhook: ${{ parameters.opsGenieWebhook }}

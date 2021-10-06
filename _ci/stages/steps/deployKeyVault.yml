@@ -1,4 +1,7 @@
 parameters:
+- name: environment
+  type: string
+
 - name: connectedServiceName
   type: string
 
@@ -17,7 +20,7 @@ steps:
   inputs:
     azureSubscription: ${{ parameters.connectedServiceName }}
     ScriptType: FilePath
-    ScriptPath: $(scriptsPath)/Export-AzureResourceId.ps1
+    ScriptPath: $(scriptsPath)/Export-AzResourceId.ps1
     ScriptArguments: >
       -VariableName 'keyVaultId'
       -ResourceName ${{ parameters.keyVaultName }}
@@ -31,6 +34,7 @@ steps:
     resourceGroupName: ${{ parameters.resourceGroupName }}
     location: ${{ parameters.location }}
     csmFile: $(templatesPath)/keyVault.json
+    csmParametersFile: $(parametersPath)/${{ parameters.environment }}/keyVaultAccessPolicies.param.json
     overrideParameters: >
       -keyVaultName ${{ parameters.keyVaultName }}
     deploymentOutputs: keyVaultOutputs

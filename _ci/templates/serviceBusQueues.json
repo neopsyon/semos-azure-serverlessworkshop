@@ -1,0 +1,36 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "serviceBusName": {
+            "type": "string"
+        },
+        "serviceBusQueues": {
+            "type": "array",
+            "defaultValue": ["false"]
+        }
+    },
+    "resources": [
+        {
+            "condition": "[not(equals(parameters('serviceBusQueues'), 'false'))]",
+            "type": "Microsoft.ServiceBus/namespaces/queues",
+            "apiVersion": "2017-04-01",
+            "name": "[concat(parameters('serviceBusName'), '/', parameters('serviceBusQueues')[copyIndex()])]",
+            "copy": {
+                "name": "queues",
+                "count": "[length(parameters('serviceBusQueues'))]"
+            },
+            "properties": {
+                "maxSizeInMegabytes": 1024,
+                "requiresDuplicateDetection": false,
+                "requiresSession": false,
+                "deadLetteringOnMessageExpiration": false,
+                "enableBatchedOperations": true,
+                "maxDeliveryCount": 10,
+                "status": "Active",
+                "enablePartitioning": false,
+                "enableExpress": false
+            }
+        }
+    ]
+}

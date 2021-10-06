@@ -1,4 +1,7 @@
 parameters:
+- name: environment
+  type: string
+
 - name: resourceGroupName
   type: string
 
@@ -23,10 +26,6 @@ parameters:
 
 - name: storageAccountName
   type: string
-
-- name: appServicePlanParamFile
-  type: string
-  default: ''
 
 - name: artifactName
   type: string
@@ -53,12 +52,13 @@ steps:
     csmFile:  $(templatesPath)/storageAccount.json
     overrideParameters: >
       -storageAccountName ${{ parameters.storageAccountName }}
-    deploymentOutputs: storageAccountOutputs
 
-- template: armOutputVariables.yml
+- template: fetchStorageConnectionString.yml
   parameters:
-    deploymentOutputName: storageAccountOutputs
-    displayName: Fetch storageAccountOutputs
+    connectedServiceName: ${{ parameters.connectedServiceName }}
+    storageAccountName: ${{ parameters.storageAccountName }}
+    resourceGroupName: ${{ parameters.resourceGroupName }}
+    outVariable: storageAccountConnectionString
 
 - task: AzureResourceGroupDeployment@2
   displayName: Deploy appServicePlan
@@ -68,8 +68,7 @@ steps:
     resourceGroupName: ${{ parameters.resourceGroupName }}
     location: ${{ parameters.location }}
     csmFile:  $(templatesPath)/appServicePlan.json
-    ${{ if ne(parameters.appServicePlanParamFile, '') }}:
-      csmParametersFile: ${{ parameters.appServicePlanParamFile }}
+    csmParametersFile: $(parametersPath)/${{ parameters.environment }}/appServicePlan.param.json
     overrideParameters: >
       -appServicePlanName ${{ parameters.appServicePlanName }}
     deploymentOutputs: appServicePlanOutputs
@@ -98,27 +97,14 @@ steps:
     resourceGroupName: ${{ parameters.resourceGroupName }}
     location: ${{ parameters.location }}
     csmFile: '$(templatesPath)/applicationInsights.json'
-    overrideParameters: -appInsName ${{ parameters.appInsightsName }}
+    overrideParameters: >
+      -applicationInsightsName ${{ parameters.appInsightsName }}
     deploymentOutputs: appInsightsOutputs
 
 - template: armOutputVariables.yml
   parameters:
     deploymentOutputName: appInsightsOutputs
     displayName: Fetch appInsightsOutputs
-
-
-- task: AzureResourceGroupDeployment@2
-  displayName: 'Deploy FunctionApp'
-  enabled: true
-  inputs:
-    connectedServiceName: ${{ parameters.connectedServiceName }}
-    resourceGroupName: $(resourceGroupName)
-    location: ${{ parameters.location }}
-    csmFile:  $(templatesPath)/functionAppShrd.json
-    ${{ if ne(parameters.functionParamFile, '')}}:
-      csmParametersFile: ${{ parameters.functionParamFile }}
-
-    deploymentOutputs: 'functionOutputs'
 
 - task: AzureResourceGroupDeployment@2
   displayName: Deploy FunctionApp
@@ -134,7 +120,7 @@ steps:
       overrideParameters: >
         -functionAppName ${{ parameters.funAppName }}
         -appServicePlanResourceId $(appServicePlanResourceId)
-        -appInsightsResourceId $(appInsightsResourceId)
+        -appInsightsInstrumentationKey $(instrumentationKey)
         -storageAccountConnectionString $(storageAccountConnectionString)
         -additionalAppSettings ${{ parameters.additionalAppSettings.value }}
         -alwaysOn "${{ parameters.alwaysOn }}"
@@ -142,7 +128,7 @@ steps:
       overrideParameters: >
         -functionAppName ${{ parameters.funAppName }}
         -appServicePlanResourceId $(appServicePlanResourceId)
-        -appInsightsResourceId $(appInsightsResourceId)
+        -appInsightsInstrumentationKey $(instrumentationKey)
         -storageAccountConnectionString $(storageAccountConnectionString)
         -alwaysOn "${{ parameters.alwaysOn }}"
     deploymentOutputs: functionOutputs
