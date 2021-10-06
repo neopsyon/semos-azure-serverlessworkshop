@@ -1,0 +1,69 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "eventGridSubscriptionName": {
+            "type": "string",
+            "defaultValue": "subToResources",
+            "metadata": {
+                "description": "The name of the event subscription to create."
+            }
+        },
+        "eventGridTopicName": {
+            "type": "string",
+            "metadata": {
+                "description": "The URL for the WebHook to receive events. Create your own endpoint for events."
+            }
+        },
+        "includedEventTypes": {
+            "type": "array",
+            "defaultValue": [ "All" ]
+        },
+        "eventGridSourceResourceId": {
+            "type": "string"
+        },
+        "eventGridSourceResourceProvider": {
+            "type": "string"
+        },
+        "functionAppName": {
+            "type": "string"
+        },
+        "functionAppEndpointName": {
+            "type": "string"
+        }
+    },
+    "resources": [
+        {
+            "name": "[parameters('eventGridTopicName')]",
+            "type": "Microsoft.EventGrid/systemTopics",
+            "apiVersion": "2020-04-01-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "source": "[parameters('eventGridSourceResourceId')]",
+                "topicType": "[parameters('eventGridSourceResourceProvider')]"
+            }
+        },
+        {
+            "name": "[concat(parameters('eventGridTopicName'), '/', parameters('eventGridSubscriptionName'))]",
+            "type": "Microsoft.EventGrid/systemTopics/eventSubscriptions",
+            "apiVersion": "2020-04-01-preview",
+            "properties": {
+                "destination": {
+                    "endpointType": "AzureFunction",
+                    "properties": {
+                        "resourceId": "[resourceId('Microsoft.Web/sites/functions/', parameters('functionAppName'), parameters('functionAppEndpointName'))]"
+                    }
+                },
+                "filter": {
+                    "subjectBeginsWith": "",
+                    "subjectEndsWith": "",
+                    "isSubjectCaseSensitive": false,
+                    "includedEventTypes": "[parameters('includedEventTypes')]"
+                }
+            },
+            "dependsOn": [
+                "[concat('Microsoft.EventGrid/systemTopics/', parameters('eventGridTopicName'))]"
+            ]
+        }
+    ]
+}

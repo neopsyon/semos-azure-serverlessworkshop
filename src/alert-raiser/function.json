@@ -1,0 +1,11 @@
+{
+  "bindings": [
+    {
+      "name": "serviceBusMessage",
+      "type": "serviceBusTrigger",
+      "direction": "in",
+      "queueName": "keyVaultMonitorQueue",
+      "connection": "serviceBusConnectionString"
+    }
+  ]
+}

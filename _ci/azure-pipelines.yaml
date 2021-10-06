@@ -1,0 +1,42 @@
+name: $(date:yyyy.M.d)-$(Build.SourceBranchName)-$(date:HHmm)
+
+parameters:
+  - name: connectedServiceName
+    type: string
+    default: serverlessworkshop-spn
+
+  - name: resourceGroupName
+    type: string
+    default: serverlessWorkshop 
+
+  - name: environment
+    type: string
+    default: prd001
+
+  - name: resourceName
+    type: string
+    default: ssrv
+
+variables:
+- template: variables/vars.yaml
+- name: vmImage
+  value: windows-latest
+
+stages:
+- template: stages/build.yaml
+  parameters:
+    functions:
+      - keyVault-monitor
+      - alert-raiser
+    vmImage: $(vmImage)
+    environment: ${{ parameters.environment }}
+
+- template: stages/deploy.yaml
+  parameters:
+    dependsOn: Build
+    vmImage: $(vmImage)
+    environment: ${{ parameters.environment }}
+    location: West Europe
+    connectedServiceName: ${{ parameters.connectedServiceName }}
+    resourceGroupName: ${{ parameters.resourceGroupName }}
+    resourceName: ${{ parameters.resourceName }}

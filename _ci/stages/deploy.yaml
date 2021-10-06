@@ -1,0 +1,92 @@
+parameters:
+  - name: dependsOn
+    type: string
+
+  - name: vmImage
+    type: string
+
+  - name: environment
+    type: string
+
+  - name: location
+    type: string
+
+  - name: connectedServiceName
+    type: string
+
+  - name: resourceGroupName
+    type: string
+
+  - name: resourceName
+    type: string
+
+stages:
+  - stage: ${{ format('Deploy_{0}', parameters.environment ) }}
+    dependsOn: ${{ parameters.dependsOn }}
+    variables:
+      - name: resourceEnvironment
+        value: ${{ format('{0}{1}', parameters.resourceName, parameters.environment ) }}
+
+    jobs:
+      - job: Deploy
+        pool:
+          vmImage: ${{ parameters.vmImage }}
+        steps:
+          - checkout: self
+            clean: true
+
+          - template: steps/deployKeyVault.yml
+            parameters:
+              environment: ${{ parameters.environment }}
+              location: ${{ parameters.location }}
+              connectedServiceName: ${{ parameters.connectedServiceName }}
+              resourceGroupName: ${{ parameters.resourceGroupName }}
+              keyVaultName: $(keyVaultName)
+
+          - template: steps/deployServiceBus.yml
+            parameters:
+              environment: ${{ parameters.environment }}
+              connectedServiceName: ${{ parameters.connectedServiceName }}
+              resourceGroupName: ${{ parameters.resourceGroupName }}
+              location: ${{ parameters.location }}
+
+          - template: steps/deployFunctionApp.yml
+            parameters:
+              environment: ${{ parameters.environment }}
+              location: ${{ parameters.location }}
+              connectedServiceName: ${{ parameters.connectedServiceName }}
+              resourceGroupName: ${{ parameters.resourceGroupName }}
+              storageAccountName: $(storageAccountName)
+              appServicePlanName: $(appServicePlanName)
+              appInsightsName: $(appInsightsName)
+              funAppName: $(funAppName)
+              artifactName: $(artifactName)
+              artifactArchive: $(artifactArchive)
+              additionalAppSettings:
+                value: |
+                  [
+                    { "name": "serviceBusConnectionString", "value": "@Microsoft.Keyvault(SecretUri=https://$(keyVaultName).vault.azure.net/secrets/$(serviceBusName)-connectionString)"},
+                    { "name": "sendGridApiKey", "value": "@Microsoft.Keyvault(SecretUri=https://$(keyVaultName).vault.azure.net/secrets/sendGridApiKey)"}
+                  ]
+
+          - task: AzureResourceGroupDeployment@2
+            displayName: Deploy eventGrid Service bus Subscription
+            inputs:
+              ConnectedServiceName: ${{ parameters.connectedServiceName }}
+              resourceGroupName: ${{ parameters.resourceGroupName }}
+              location: ${{ parameters.location }}
+              csmFile: $(templatesPath)/eventGrid.json
+              overrideParameters: >
+                -eventGridTopicName keyVaultEvents
+                -eventGridSourceResourceId $(keyVaultResourceId)
+                -eventGridSourceResourceProvider "Microsoft.KeyVault.vaults"
+                -functionAppName $(funAppName)
+                -functionAppEndpointName keyVault-monitor
+                -includedEventTypes [
+                  "Microsoft.KeyVault.KeyNearExpiry",
+                  "Microsoft.KeyVault.CertificateNearExpiry",
+                  "Microsoft.KeyVault.SecretNearExpiry",
+                  "Microsoft.KeyVault.SecretNewVersionCreated",
+                  "Microsoft.KeyVault.CertificateNewVersionCreated",
+                  "Microsoft.KeyVault.KeyNewVersionCreated"
+                ]

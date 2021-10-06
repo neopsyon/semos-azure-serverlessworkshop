@@ -1,0 +1,16 @@
+{
+  "bindings": [
+    {
+      "type": "eventGridTrigger",
+      "name": "eventGridEvent",
+      "direction": "in"
+    },
+    {
+      "name": "serviceBusMessage",
+      "type": "serviceBus",
+      "direction": "out",
+      "queueName": "keyVaultMonitorQueue",
+      "connection": "serviceBusConnectionString"
+    }
+  ]
+}

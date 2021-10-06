@@ -1,0 +1,106 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "keyVaultName": {
+            "type": "string"
+        },
+        "keyVaultId": {
+            "type": "string",
+            "defaultValue": ""
+        },
+        "keyVaultSku": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "allowedValues": [
+                "Standard",
+                "Premium"
+            ],
+            "metadata": {
+                "description": "SKU for the vault"
+            }
+        },
+        "keyVaultAccessPolicies": {
+            "type": "array",
+            "metadata": {
+                "description": "Access Policies defining the scope and level of access for different principals"
+            }
+        },
+        "keyVaultNetworkAcls": {
+            "type": "object",
+            "metadata": {
+                "description": "Network Access Control rules for the Key Vault"
+            }
+        },
+        "keyVaultPurgeSoftDelete": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Enable the soft delete for the Key Vault"
+            }
+        },
+        "isPurgeProtectionEnabled": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Enable the purge protection for the Key Vault"
+            }
+        }
+    },
+    "resources": [
+        {
+            "type": "Microsoft.KeyVault/vaults",
+            "name": "[parameters('keyVaultName')]",
+            "apiVersion": "2016-10-01",
+            "location": "[resourcegroup().location]",
+            "properties": {
+                "createMode": "[if(not(empty(parameters('keyVaultId'))), 'recover', 'default')]",
+                "enableSoftDelete": "[parameters('keyVaultPurgeSoftDelete')]",
+                "enablePurgeProtection": "[parameters('isPurgeProtectionEnabled')]",
+                "enabledForDeployment": true,
+                "enabledForDiskEncryption": true,
+                "enabledForTemplateDeployment": true,
+                "tenantId": "[subscription().tenantId]",
+                "accessPolicies": "[if(not(empty(parameters('keyVaultId'))), json('null'),  json('[]'))]",
+                "sku": {
+                    "name": "[parameters('keyVaultSku')]",
+                    "family": "A"
+                },
+                "networkAcls": "[parameters('keyVaultNetworkAcls')]"
+            },
+            "resources": [
+            ]
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/accessPolicies",
+            "name": "[concat(parameters('keyVaultName'), '/add')]",
+            "apiVersion": "2018-02-14",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
+            ],
+            "properties": {
+                "copy": [
+                    {
+                        "name": "accessPolicies",
+                        "count": "[length(parameters('keyVaultAccessPolicies'))]",
+                        "input": {
+                            "tenantId": "[parameters('keyVaultAccessPolicies')[copyIndex('accessPolicies')].tenantId]",
+                            "objectId": "[parameters('keyVaultAccessPolicies')[copyIndex('accessPolicies')].objectId]",
+                            "permissions": {
+                                "keys": "[parameters('keyVaultAccessPolicies')[copyIndex('accessPolicies')].permissions.keys]",
+                                "secrets": "[parameters('keyVaultAccessPolicies')[copyIndex('accessPolicies')].permissions.secrets]",
+                                "certificates": "[parameters('keyVaultAccessPolicies')[copyIndex('accessPolicies')].permissions.certificates]"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "outputs": {
+        "keyVaultResourceId": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
+        }
+    }
+}

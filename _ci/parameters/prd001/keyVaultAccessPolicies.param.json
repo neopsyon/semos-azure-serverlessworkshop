@@ -1,0 +1,75 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.1",
+    "parameters": {
+        "keyVaultAccessPolicies": {
+            "value": [
+                {
+                    "tenantId": "8ad28282-ae9f-4bce-bfea-1126b81623a7",
+                    "objectId": "a24fefb1-ff1f-44b8-a8b9-12e76d8451b9",
+                    "permissions": {
+                        "keys": [
+                            "Get",
+                            "List",
+                            "Update",
+                            "Create",
+                            "Import",
+                            "Delete",
+                            "Recover",
+                            "Backup",
+                            "Restore"
+                        ],
+                        "secrets": [
+                            "Get",
+                            "List",
+                            "Set",
+                            "Delete",
+                            "Recover",
+                            "Backup",
+                            "Restore"
+                        ],
+                        "certificates": [
+                            "Get",
+                            "List",
+                            "Update",
+                            "Create",
+                            "Import",
+                            "Delete",
+                            "Recover",
+                            "Backup",
+                            "Restore",
+                            "ManageContacts",
+                            "ManageIssuers",
+                            "GetIssuers",
+                            "ListIssuers",
+                            "SetIssuers",
+                            "DeleteIssuers"
+                        ]
+                    }
+                },
+                {
+                    "tenantId": "8ad28282-ae9f-4bce-bfea-1126b81623a7",
+                    "objectId": "77022873-aaa2-446f-9618-1ac7d1bbcaab",
+                    "permissions": {
+                        "keys": [],
+                        "secrets": [
+                            "Get"
+                        ],
+                        "certificates": []
+                    }
+                }
+            ]
+        },
+        "keyVaultNetworkAcls": {
+            "value": {
+                "defaultAction": "Allow",
+                "bypass": "AzureServices",
+                "virtualNetworkRules": [],
+                "ipRules": []
+            }
+        },
+        "keyVaultPurgeSoftDelete": {
+            "value": true
+        }
+    }
+}
